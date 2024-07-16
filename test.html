@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket and API Test</title>
+</head>
+<body>
+  <h1>WebSocket and API Test</h1>
+
+  <!-- Form to send WebSocket message -->
+  <div>
+    <h2>Send WebSocket Message</h2>
+    <label for="ws-id">ID:</label>
+    <input type="number" id="ws-id" placeholder="Enter ID">
+    <label for="ws-message">Message:</label>
+    <input type="text" id="ws-message" placeholder="Enter message">
+    <button onclick="sendWebSocketMessage()">Send Message</button>
+  </div>
+
+  <!-- Form to fetch data via REST API -->
+  <div>
+    <h2>Fetch Data from API</h2>
+    <label for="api-id">ID:</label>
+    <input type="number" id="api-id" placeholder="Enter ID">
+    <button onclick="fetchData()">Fetch Data</button>
+  </div>
+
+  <!-- Display area for server responses -->
+  <div>
+    <h2>Server Responses</h2>
+    <pre id="responses"></pre>
+  </div>
+
+  <script>
+    const socket = new WebSocket('https://websockets-tjie.onrender.com');
+
+    socket.onopen = () => {
+      console.log('Connected to server');
+      displayResponse('Connected to server');
+    };
+
+    socket.onmessage = (event) => {
+      const response = JSON.parse(event.data);
+      console.log('Received from server:', response);
+      displayResponse('Received from server: ' + JSON.stringify(response));
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnected from server');
+      displayResponse('Disconnected from server');
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      displayResponse('WebSocket error: ' + error);
+    };
+
+    function sendWebSocketMessage() {
+      const id = document.getElementById('ws-id').value;
+      const text = document.getElementById('ws-message').value;
+
+      if (id && text) {
+        const message = { id: parseInt(id), text: text };
+        socket.send(JSON.stringify(message));
+        console.log('Sent to server:', message);
+        displayResponse('Sent to server: ' + JSON.stringify(message));
+      } else {
+        alert('Please enter both ID and message');
+      }
+    }
+
+    function fetchData() {
+      const id = document.getElementById('api-id').value;
+
+      if (id) {
+        fetch(`https://websockets-tjie.onrender.com/api/get_websocket_data/${id}`)
+          .then(response => response.json())
+          .then(data => {
+            console.log('Received from API:', data);
+            displayResponse('Received from API: ' + JSON.stringify(data));
+          })
+          .catch(error => {
+            console.error('API error:', error);
+            displayResponse('API error: ' + error);
+          });
+      } else {
+        alert('Please enter an ID');
+      }
+    }
+
+    function displayResponse(message) {
+      const responses = document.getElementById('responses');
+      responses.textContent += message + '\n';
+    }
+  </script>
+</body>
+</html>
